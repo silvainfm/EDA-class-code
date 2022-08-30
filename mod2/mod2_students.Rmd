@@ -77,27 +77,29 @@ flights = fread("https://github.com/arunsrinivasan/satrdays-workshop/raw/master/
 Use a few base R commands to explore the data. What do we see?
 
 ```{r}
+summary(flights)
 
+head(flights)
 ```
 
 We might say, depending on how the data is organized (we will examine this with `head` below) that it has over 250,000 cases (or units) and 17 variables (or features) that describe the units.
 
 ```{r}
-
+nrow(flights)
 
 # or you might just do dims
-
+dim(flights)
 ```
 
 What is in the columns of the data?
 ```{r}
-
+ncol(flights)
 ```
 
 Already we are getting a feel for the shape and size of the data. How is it set up? What kind of object is it to R? What does it seemed to be organized by? These are the kinds of questions you always want to ask first about the data you are about to explore.
 
 ```{r}
-
+class(flights)
 ```
 
 We can see that this data is time series data! Each row of the data is providing information about a year or date. Dates are typically considered to be *interval* data.
@@ -166,7 +168,7 @@ setkey(flights, origin)
 head(flights)
 
 # compared to base R
-
+flights[order(origin) , ]
 
 ```
 
@@ -176,8 +178,8 @@ We can also sort the data based on a variable of our choice. Or use multiple var
 
 ```{r}
 # set order 
-
-
+mydata0 <- setorder(flights, origin)
+mydata1 <- setorder(flights, -origin)
 
 # in base R
 
