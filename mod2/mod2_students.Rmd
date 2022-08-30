@@ -1,0 +1,353 @@
+---
+title: "Lecture 2"
+author: "Dr. Cassy Dorff"
+date: "8/30/2022"
+output: html_document
+---
+## Data Structures
+
+Key themes overview:
+
+- how to "look" at your data when you first load it in
+- there are two familiar ways of storing tabulated data: in a “wide” format, and in a “long” format. *Wide* data has a column for each variable. 
+- you will hear people use different terms like "variable" and "attribute" to describe "features" of data
+- you've learned to 'index' using brackets and the `$` symbol, this lesson builds on your familiarity with "indexing" to manipulate data using data.table formatting and base functions.
+- today we will talk about `data.table` which works well with large files and is fast for things like subset, grouping, and joins-- DO NOT WORRY if you don't get all of this today. You can always return back to it.
+
+--- 
+
+### long vs wide data
+
+As I mentioned, there are typically two ways that "observational, "rectangular" data are typically stored. *Long* and *wide* data. In general, we tend to find data in the "rectangular" data format, i.e. collections of values that are each associated with a variable and an observation. We can quickly think of data types that do not fit this description: images, videos, text, audio, and even sometimes network data. Let's consider the two examples of data organization below.
+
+Which is this? 
+
+Product   Attribute   Value
+-------   ---------   -----
+A         Height      10
+A         Width       5
+A         Weight      2
+B         Height      20
+B         Width       10
+
+The same data in a *wide* format would be:
+
+Product  Height  Width  Weight
+-------  ------  -----  ------
+A        10      5      2
+B        20      10     NA
+
+An easy way to spot the difference is to look for categorical data. In the first case we see that the variable "attribute" contains the categories "Weight" and "Height." (E.g., this is called a "categorical" variable) For each variable to have their own column, as in the *wide* format, we'd probably see "weight" and "height" with their own column, like is shown in table 2. This is an intuitive way to record data, but not often to use the data in R. Keep these different structures in mind as we look at data today.
+
+Let's get started exploring some data below. Begin with a few packages. You should already have most these on your machine, though you might not have data.table!
+
+Data.table philosophy: 
+- straightforward code
+- fast and efficient 
+
+```{r, echo=FALSE}
+# libraries
+
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(data.table)
+
+```
+
+Let's start with the flights data. Below, we see the *wide* format, which looks a lot like something you might view in excel.
+
+There are a lot of ways to read in data. You have probably seen 
+`read_csv` which is from the `readr` package and is in the tidy universe. See https://readr.tidyverse.org/. 
+
+Lets learn an alternative function for this. What does the `fread` function do?
+
+The `fread` function is from the `data.table` package. Use `?fread()` to find out more.
+- check out this datacamp article for more information on reading data
+- https://www.datacamp.com/community/tutorials/importing-data-r-part-two
+- Note that reading in your data with the fread() function returns you a *data table*:
+
+Instructor note: Described as the “fast and friendly file finagler”, the popular data.table package is an extremely useful and easy to use. Its fread() function is meant to import data from regular delimited files directly into R, without any detours or nonsense. Note that “regular” in this case means that every row of your data needs to have the same number of columns.(From datacamp). It is equivalent to read.csv() function of base R.
+
+Here is an example of reading data straight from github. 
+```{r}
+flights = fread("https://github.com/arunsrinivasan/satrdays-workshop/raw/master/flights_2014.csv")
+```
+
+Use a few base R commands to explore the data. What do we see?
+
+```{r}
+
+```
+
+We might say, depending on how the data is organized (we will examine this with `head` below) that it has over 250,000 cases (or units) and 17 variables (or features) that describe the units.
+
+```{r}
+
+
+# or you might just do dims
+
+```
+
+What is in the columns of the data?
+```{r}
+
+```
+
+Already we are getting a feel for the shape and size of the data. How is it set up? What kind of object is it to R? What does it seemed to be organized by? These are the kinds of questions you always want to ask first about the data you are about to explore.
+
+```{r}
+
+```
+
+We can see that this data is time series data! Each row of the data is providing information about a year or date. Dates are typically considered to be *interval* data.
+
+So in this case, our unit is actually a chunk of time. We will talk more about time series later in the course. For now, let's just investigate the data a bit more. Let's use indexing to examine the 'origin' feature (variable, row).
+
+To do this, we take advantage of the data frame set up which is similar to a matrix that reflects the R X C (i.e., ROW * COLUMNS) principle. Below we create an object called `dat1` which takes all of the rows (indicated by a blank space) and only the `origin` column of the data.
+
+To manipulate data frames in R we can use the bracket notation to access the indices for the observations and the variables. It is easiest to think of the data frame as a rectangle of data where the rows are the observations and the columns are the variables. Just like in matrix algebra, the indices for a rectangle of data follow the RxC principle; in other words, the first index is for Rows and the second index is for Columns [R, C].When we only want to subset variables (or columns) we use the second index and leave the first index blank. (From:https://stats.idre.ucla.edu/r/modules/subsetting-data/)
+
+```{r}
+# basic data frame visual
+
+
+
+
+```
+
+We can think of data frames as "2D" with rows and columns. Get familiar with subsetting based on your understanding of this structure. For example:
+
+```{r}
+# subset rows (with a 'relational operator") that do not contain "a"
+
+
+# select the first column row1
+
+```
+
+Now lets try similar moves with real data.
+
+```{r}
+# create a new object and return a vector for the column called "origin"
+
+
+# create a new object and try to subset on a different column (hint: names() is useful)
+
+
+
+```
+
+How might we quickly see which origin airports are included in the data?
+
+```{r}
+
+
+
+```
+
+On your own, can you find all the flights whose origin is 'JFK' using base R?
+
+```{r eval=FALSE}
+# Filter based on one variable
+
+```
+
+
+## Fast Data Manipulation with data.table
+
+Ok, now that we have done some basic investigations of the data in base R, let's explore something called `data.table.` `data.table` uses binary search algorithm that makes data manipulation faster.
+
+Binary Search Algorithm: Binary search finds a value from a sorted list of values. It repeatedly splits a list that contains values in half, until you found the value that you were searching for. For efficiency, it is useful to set a key in your dataset which tells system that data is sorted by the key column. For example, you have employee’s name, address, salary, designation, department, employee ID. We can use 'employee ID' as a key to search a particular employee.
+
+```{r}
+# Indexing (Set Keys)
+setkey(flights, origin)
+head(flights)
+
+# compared to base R
+
+
+```
+
+What did `setkey()` do? It sorted the data based on flight origin. Setkey sorts a `data.table` and marks it as sorted with an attribute sorted. The sorted columns are the key. The key can be any number of columns. The columns are always sorted in ascending order. (Reference/see: r documentation for more).
+
+We can also sort the data based on a variable of our choice. Or use multiple variables.  Below we can use the `setorder()` function to sort the data based on variables of our choice. We can do this in ascending or descending order.
+
+```{r}
+# set order 
+
+
+
+# in base R
+
+
+
+```
+
+Sorting the data starts to give us a sense of how the data is organized. We might want to also begin looking into individual variables. For example, we can also summarize the data using built-in functions like `median`, `min`, `max` and `mean.`
+
+```{r}
+min(flights$air_time)
+
+
+
+```
+
+After investigating the data, it is time to begin to summarize the data. **What I want you to understand in this very first lecture is that there are multiple ways to achieve almost any goal in R*. You might use base R, data.table, or tidy verse. As you get better with R, your choices will depend on the data and project. Knowing how to read base R will absolutely help you learn to code better.
+
+For data.table, practice by 'reading' the code structure of `data.table()`: ie: DT[where, select|update|do, by]. The way to read it (out loud) is: Take DT, subset rows using i, then calculate j, grouped by "k". "On which rows (i), what to do (j), grouped by what? (k).  [Note: see ArunSrinivasan-DataTable.pdf]
+
+For base R, we could use the function `aggregate` and complete a simlar task. 
+
+```{r}
+# data.table example
+agg_datTab <-flights[, .(mean_arr_delay = mean(arr_delay, na.rm = TRUE)), by = origin]
+
+# base R example
+
+
+# tidy example
+```
+
+You can check each new object we made and see that it is a data.frame! If you are new to this stuff, I'd say see this lecture as a good foundation for understanding that R is made first of base R code, then we have packages that use different principals of doing things and, importantly, different syntax. 
+
+If you are more advanced already in R, I'd recommend challenging yourself to often try and complete a task using multiple methods, or (if you are really good at tidy) challenging yourself to see if you can do something in base R.
+
+*MANY* packages are written using base R so that they do not have so many 'dependencies.'
+
+# New data: breweries
+
+Now try to load the data below. Take some time to 'look' at the data and get familiar with its structure.
+
+Load in "ncbreweries data" using 'load' or the Rstudio GUI.
+
+
+```{r}
+# load data
+load("ncbreweries.rdata") 
+
+# use the commands from the earlier part of the 
+# lesson to check the dimension, set up, and variable names
+
+
+
+# check out using tidyverse
+
+```
+
+_What do we see?_
+
+In the columns we see attributes that contain information about each Brewery. This information is easy to "read" but might prove difficult, in this format, for plotting and analysis.
+
+"Long" formatted data (versus wide) is useful for visualization because each **variable** (or attribute) is represented by a column.
+
+Using some quick indexing, how would we view the different type of breweries available in the data?
+
+```{r eval=FALSE}
+# try to create a new object called "temp" that subsets ncbreweries by the "type" variable
+
+
+```
+
+Why didn't the above code work? What does the error indicate?
+
+The base R syntax for subsetting a dataframe requires you to specify the column name as a string. Each column that evaluates true against the argument (in this case “type”=“type”) is returned.
+
+```{r}
+
+```
+
+What class is the object?
+
+```{r}
+
+```
+
+Now, how can we calculate the mean beer count for each type of brewery? (There are five types)? Try to use `data.table()` here.
+
+```{r}
+# have students try to do this:
+
+```
+
+Now let's think a little about visualization, what is an easy plot for visualizing a trend from this particular data using base R?
+
+```{r}
+
+
+```
+
+Earlier we saw that microbreweries were established quite a long time ago, and yet the simple plot above showing the frequencies of observations broken down by time tells us that not many breweries were in north carolina until the last 3 decades.
+
+## Comparison to Tidy Data
+
+You have already learned about `tidy data` which we will focus on next for the basis of visualization. In general you can do a lot of great things both in base R and in the tidyverse. You should always work on improving both skillsets! Sometimes base R really comes in handy, especially when working with "big" data.
+
+Now, how can we calculate the mean beer count for each type of brewery? (There are five types) using a tidy approach?
+
+```{r}
+# recall:
+brew_mean_bc <- ncbreweries[, .(meanBeerCount = mean(beercount, na.rm = TRUE)), by = type]
+brew_mean_bc
+
+# in tidy (try in groups)
+
+
+
+```
+
+Bonus, can we do the above using only base R?
+
+```{r}
+# hint: look up the aggregate function
+
+
+
+
+```
+
+
+Next, can you make a simple graphic of this data? 
+
+```{r}
+# try in groups
+
+
+# in base R
+
+```
+
+----
+
+
+## A little less guidance now 
+
+Load in the `election2012.RData` file. Create a code chunk in RMarkdown that tells us the number of rows, cols, the names of all of the variables in the data set, and the State(s) of the first few observations. What do you see? 
+
+
+ Information on data. County level elections results
+ -Totalvotes - total number of votes in the county
+ -Demvotes - total number of votes received by Dem in that county
+ -DemVotesTotalPercent - the percentage of the votes for the Dems in that county
+
+
+What percentage of the vote did the Democratic Candidate for President in 
+2012 (Barack Obama) How many counties (observations/rows) does Tennessee have? 
+
+Discuss two ways you woud visualize this TN data? As a group, try to make one figure on your own and submit it to my personal slack channel (only one submission per group needed). 
+
+
+## references for data.table & today's lecture
+*The last one is particularly useful! *
+
+- https://rawgit.com/wiki/Rdatatable/data.table/vignettes/datatable-intro.html
+- https://github.com/arunsrinivasan/flights
+- https://www.datacamp.com/community/tutorials/data-table-r-tutorial
+- https://stackoverflow.com/questions/27886839/what-does-error-object-myvariable-not-found-mean
+- https://www.listendata.com/2016/10/r-data-table.html
+- https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html
+- https://rcompanion.org/handbook/C_04.html
+- https://cran.r-project.org/web/packages/data.table/vignettes/datatable-faq.html
+
+
