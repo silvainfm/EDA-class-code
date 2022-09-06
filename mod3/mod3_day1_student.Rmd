@@ -60,7 +60,7 @@ beerc
 5. Next, can you make a simple graphic of this data? Read about ggplot using the help files first!
 
 ```{r}
-p <- ggplot(data=beerc, aes(type,countmean))  + geom_bar(stat="identity")
+p <- ggplot(data=beerc, aes(type,countmeans))  + geom_bar(stat="identity")
 p
 
 ```
