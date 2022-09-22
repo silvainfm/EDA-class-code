@@ -117,6 +117,8 @@ The plot above looks nice, and to some extent we have visualized our original qu
 
 Perhaps we want to know a bit more about flight patterns, particularly as they relate to the airlines that operate out of Houston. What if we focus on showing the common flight patterns across airlines?
 
+Note: An important feature of these plots is the meaningfulness of the vertical axis: No gaps are inserted between the strata, so the total height of the plot reflects the cumulative quantity of the observations.
+
 ```{r, warning = F, message = F, fig.height = 4, fig.width = 6}
 ggplot(flows,aes(y = count, axis1 = Origin, axis2 = Dest)) +
   geom_alluvium(aes(fill = Airline)) +
