@@ -49,7 +49,8 @@ First, we see that Ozone and Solar.R contain most of our missing data  The X axi
 ```{r}
 # replace the variable "Month" with a factor that uses the 
 # name of the month to represent each numeric value
-
+airquality$month_cat <- factor(airquality$Month, levels = c(5, 6, 7, 8, 9),
+              labels = c("May", "June", "July", "Aug", "Sept"))
 
 ```
 
@@ -58,7 +59,9 @@ Now that you've made a new month variable, plot missingness again but this time 
 ```{r warning=FALSE}
 # plot percent of missing data for each variable faceted by month
 # make sure the x axis is from 0 to 100
-
+gg_miss_var(airquality, facet = month_cat, show_pct = TRUE)+
+  scale_y_continuous(labels = scales::percent_format(scale = 1), 
+                     limits = c(0,100))
 
 # bonus, can you see how to use the scales library + "scale_y_continous" to add percent signs to the labels?
 # scale_y_continuous(labels = scales::percent_format(scale = 1))
@@ -75,11 +78,9 @@ Apply to dataset, apply to individual variables:
 
 ```{r funcs}
 
-
-
-
-
-
+pct_miss(airquality$Ozone)
+n_miss(airquality$Wind)
+n_complete(airquality$Solar.R)
 
 ```
 
@@ -111,7 +112,7 @@ The VIM function matrixplot creates a matrix plot in which all cells of a data m
 Based on the above information, let's explore the ?matrixplot function in the VIM package. Read the help file and change the `sortby` parameter inside the `matrixplot` function. Which column is the most useful to sort the graphic by? Why?
 
 ```{r matrix, warning=FALSE}
-matrixplot( )
+matrixplot(airquality, sortby = "Ozone")
 ```
 
 As VIM package has matrix plot, similarly naniar has the var_miss() function. It provides a summary of whether the data is missing (in black) or not. It also provides the percentage of missing values in each column.
