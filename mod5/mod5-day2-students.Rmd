@@ -13,8 +13,6 @@ Today we will work through a short demonstration on how to illustrate flows usin
 First, lets library our packages. The ggalluvial package is a ggplot2 extension for producing alluvial plots in a tidyverse framework.
 
 ```{r, message = F, warning=F}
-# install.packages("ggalluvial")
-# install.packages("hflights")
 library(ggalluvial)
 library(tidyverse)
 library(hflights)
@@ -137,7 +135,7 @@ ggplot(flows, aes(x = Airline,y = count)) +
   geom_bar(stat = "identity") +
   theme_minimal()
 
-# Creat a new indicator
+# Create a new indicator
 flows <- flows %>%
   mutate(Airline_reduced = case_when( # new variable "airline reduced"
     Airline == "CO" ~ "Continental", # when airline == CO, name it "Continental"
@@ -154,10 +152,15 @@ Now, we can re-plot the alluvial diagram replacing the alluviam's color fill wit
 ## Try on your own
 
 ```{r, warning = F, message = F, fig.height = 4, fig.width = 6}
-
-
-
-
+ggplot(flows, aes(y = count, axis1 = Origin, axis2 = Dest)) +
+  geom_alluvium(aes(fill = Airline_reduced)) +
+  geom_stratum(width = 1/12, fill = "black", color = "grey") +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) + 
+  labs(title = "Most Common Flight Paths by Airline from Houston in 2011", y='Number of flights') + 
+  scale_fill_manual(values = c("blue", "darkorange", "grey")) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  guides(fill = guide_legend(title = "Airline"))
+# add labs for title and y axis title, take out x axis 
 
 
 ```
