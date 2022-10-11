@@ -10,6 +10,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(tidyverse)
 library(VIM)
 library(naniar)
 library(dplyr)
@@ -166,6 +167,7 @@ Our analysis shows that the Ozone data is *not* missing completely at random, bo
 gg_miss_var(airquality, Month, show_pct = TRUE) + 
   ylim(0, 100) 
 ```
+
 ## What can we conclude about missingness in Ozone?
 
 We have now ruled out that the missingness in Ozone is MCAR, which leaves MAR and MNAR. Recall that MAR indicates we have evidence that suggests we can predict missingness from other variables in the dataset. For the purposes of this class, we just want to first and foremost be able to provide exploratory data analysis evidence that the data is MCAR, MAR, or MNAR. 
@@ -192,7 +194,8 @@ summary(df)
 matrixplot(df, sortby = 1)
 
 ```
-Though we have not done it in full detail here, let's assume we have shown that AGE does not appear to be conditional on fave_fruit or weekly_groceries. 
+
+Though we have not done a full analysis here in detail here (where we check the relationship between each variable to see is missingness is conditional on those variables), we know the true data generating process and can proceed to demonstrate how to replace the MCAR missing data with the mean.
 
 # Replacement
 
