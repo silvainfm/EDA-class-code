@@ -43,14 +43,13 @@ Let's take a look at the variable we just grabbed (sst_mean). What are the dimen
 
 ```{r}
 # Find the dimensions of sst_mean
-# YOUR CODE HERE #
-
+dim(sst_mean)
 
 ```
 
 What do you think these dimensions could represent? (Hint: what defines coordinates in a map?)
 
-**Answer**: _________
+**Answer**: lon, and lat
 
 sst_mean is organized into a matrix of size _latitude by longitude_. Each value in our matrix represents the sea surface temperature at that coordinate point.
 
@@ -80,7 +79,7 @@ To plot our NetCDF data, we first need to convert it to a **raster**. A raster i
 r <- raster(t(sst_mean), xmn = min(lon), xmx = max(lon), ymn = min(lat), ymx = max(lat))
 
 # use R's plot function to plot the raster we just created
-# YOUR CODE HERE #
+plot(r)
 
 ```
 
@@ -88,17 +87,11 @@ If you want to customize your map, you can change the color mapping R uses for e
 
 ```{r}
 # plot the raster again, this time adding the argument for colors
-## YOUR CODE HERE ##
-
+plot(r, col= topo.colors(100))
 
 ```
 
 Try playing around with topo.colors and see what changing the number inside the parentheses does.
-
-```{r}
-## YOUR CODE HERE ##
-
-```
 
 
 **topo.colors()** is a nice color collection for making geography maps. The number supplied to the function tells R how many colors to include. There are many color palletes available in R; find a more comprehensive list [here](https://www.datanovia.com/en/blog/top-r-color-palettes-to-know-for-great-data-visualization/#r-base-color-palettes).
@@ -159,11 +152,11 @@ This gives us an idea for how the sea surface temperature in 1982 differed from 
 
 ## FILL IN CODE BELOW ##
 # Get the variable called "SSTA"
-ssta <- ncvar_get()
+ssta <- ncvar_get(ssta_last, "SSTA")
 
 # Get latitude and longitude ("lat" and "lon")
-lon <- ncvar_get()
-lat <- ncvar_get()
+lon <- ncvar_get(ssta_last, "lon")
+lat <- ncvar_get(ssta_last, "lat")
 
 ## END OF YOUR CODE ##
 
