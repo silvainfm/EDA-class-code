@@ -104,21 +104,30 @@ life_exp$region <- as.factor(life_exp$region)
 
 
 world_map <- map_data("world")
-life_exp.map <- left_join(life_exp, world_map, by = "region")
+life_exp_map <- left_join(life_exp, world_map, by = "region")
 
 
-ggplot(life_exp.map, aes(long, lat, group = group))+
+ggplot(life_exp_map, aes(long, lat, group = group))+
   geom_polygon(aes(fill = lifeExp ), color = "white")+
   scale_fill_viridis_c(option = "C") + labs(title="Global Life Expectancy",
                                             fill="Years", x="Latitude", y="Longitude")
-  
-  
 ```
-
-
 *Students try this* 
 
-Can you replicate the code above using one either population (pop) or gdp per capita (gdpPercap) as our demographic variable of interest? 
+1. What is going on with the missing whole in Africa?
+
+```{r}
+library(naniar) 
+life_exp_check <- life_exp_map %>% 
+  dplyr::filter(continent == "Africa") %>%
+  dplyr::select(lifeExp, country)
+gg_miss_var(life_exp_check, country, show_pct = TRUE) + 
+  ylim(0, 100) 
+
+unique(life_exp_check$country)
+```
+
+2. Can you replicate the code above using one either population (pop) or gdp per capita (gdpPercap) as our demographic variable of interest? 
 
   
 ```{r}
@@ -159,9 +168,9 @@ In the previous subsection, we used built-in datasets of geographic data to crea
 
 The ggmap package allows you to do this by using tools from Google Maps directly from R. This package allows you to pull a base map from Google Maps and a few other map servers, which you can then plot and to which you can add points, polygons, lines, and other elements using ggplot2 functions. This package uses the Google Maps API, so you should read their terms of service and make sure you follow them if using this package.
 
-You use the get_map function from this package to get base maps for different locations. To tell the function where you would like the map centered, you can either use the longitude and latitude of the center point of the map or you can use a character string to specify a location. This will work well for most cities, and you can also use it with landmarks, but it might fail to geocode less well-known locations. You can use the *zoom* parameter to set the amount the map is zoomed in on that location; this value should be between 3 and 20, with lower values more zoomed out and higher values more zoomed in.
+You use the `get_map` function from this package to get base maps for different locations. To tell the function where you would like the map centered, you can either use the longitude and latitude of the center point of the map or you can use a character string to specify a location. This will work well for most cities, and you can also use it with landmarks, but it might fail to geocode less well-known locations. You can use the *zoom* parameter to set the amount the map is zoomed in on that location; this value should be between 3 and 20, with lower values more zoomed out and higher values more zoomed in.
 
-NOTE: To use the get_map function and other functions in the ggmap package, you need a working Google Maps API Key. In order to create an API key, you need to: 
+NOTE: To use the `get_map` function and other functions in the ggmap package, you need a working Google Maps API Key. In order to create an API key, you need to: 
 
 1) Create a Google account
 2) Goto the Google Maps Platform Console to create an API key
