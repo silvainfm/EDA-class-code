@@ -16,12 +16,11 @@ library(mapdata)
 library(devtools)
 library(tidyverse) 
 library(ggmap)
-
 ```
 
 
-
 # The Primary tasks of mapping in data science 
+
 Plotting spatial data is a common visualisation task. Typically our analyses can be decomposed into two problems :1) using one data source to draw a map, and 2) adding data from another information source to the map to provide the relevant information for our plotting task. 
 
 # Polygon maps 
@@ -83,12 +82,13 @@ ggplot(some_eu_maps, aes(x = long, y = lat)) +
   theme(legend.position = "none")
 ```
 
+## STUDENTS TRY THIS:
+
 Using `ggsave`, can you save the map to a specific location on your machine?
 
 ```{r}
 
 ```   
-
 
 ## Displaying new information on a map
 
@@ -106,12 +106,18 @@ life_exp$region <- as.factor(life_exp$region)
 world_map <- map_data("world")
 life_exp_map <- left_join(life_exp, world_map, by = "region")
 
+# answer
+#life_exp_map <- full_join(life_exp, world_map, by = "region")
 
 ggplot(life_exp_map, aes(long, lat, group = group))+
   geom_polygon(aes(fill = lifeExp ), color = "white")+
   scale_fill_viridis_c(option = "C") + labs(title="Global Life Expectancy",
                                             fill="Years", x="Latitude", y="Longitude")
+  
+  
 ```
+
+
 *Students try this* 
 
 1. What is going on with the missing whole in Africa?
@@ -125,13 +131,27 @@ gg_miss_var(life_exp_check, country, show_pct = TRUE) +
   ylim(0, 100) 
 
 unique(life_exp_check$country)
+
+# You can also explore the setdiff function to figure out
+# what kinds of renaming you might need to do 
+setdiff(life_exp$reg)
 ```
+
+TAKE AWAY:
+
+- sometimes your coauthor or team mate might merge wrong! Always think through the merge/join.
+- sometimes our information has different spatial labels (in this case country names) than the map we are using which can give the false appearance of MISSING DATA. You might have to manually correct this! See above.
+
+Note, however, that the difference between two sets is order-dependent. It is the material that is in the first named set, that is not in the second named set. Thus `setdiff(A,B)` gives a different answer than `setdiff(B,A)`
 
 2. Can you replicate the code above using one either population (pop) or gdp per capita (gdpPercap) as our demographic variable of interest? 
 
   
 ```{r}
-
+ggplot(life_exp_map, aes(long, lat, group = group))+
+  geom_polygon(aes(fill = gdpPercap ), color = "white")+
+  scale_fill_viridis_c(option = "D") + labs(title="GDP (2007)",
+                                            fill="Dollars", x="Latitude", y="Longitude")
 
 
 ```
@@ -140,9 +160,7 @@ unique(life_exp_check$country)
 # Create a new map with state-level arrests
 
 The map_data package includes many pre-packaged spatial data frames to be used. For example, here we use state spatial data and merge that data with data on different types of arrests by state. 
-
-*Students try this*
-
+  
 ```{r}
 # Prepare the USArrests data
 arrests <- USArrests 
@@ -156,8 +174,10 @@ states_map <- map_data("state")
 arrests_map <- left_join(states_map, arrests, by = "region")
 
 # CAN YOU MAP arrests by states?
-
-
+ggplot(arrests_map, aes(long, lat, group = group))+
+  geom_polygon(aes(fill = Assault), color = "white")+
+  scale_fill_viridis_c(option = "C") + labs(x="Latitude", y="Longitude", title="Assaults by State") + 
+  theme_bw()
 
 ```
   
@@ -168,9 +188,9 @@ In the previous subsection, we used built-in datasets of geographic data to crea
 
 The ggmap package allows you to do this by using tools from Google Maps directly from R. This package allows you to pull a base map from Google Maps and a few other map servers, which you can then plot and to which you can add points, polygons, lines, and other elements using ggplot2 functions. This package uses the Google Maps API, so you should read their terms of service and make sure you follow them if using this package.
 
-You use the `get_map` function from this package to get base maps for different locations. To tell the function where you would like the map centered, you can either use the longitude and latitude of the center point of the map or you can use a character string to specify a location. This will work well for most cities, and you can also use it with landmarks, but it might fail to geocode less well-known locations. You can use the *zoom* parameter to set the amount the map is zoomed in on that location; this value should be between 3 and 20, with lower values more zoomed out and higher values more zoomed in.
+You use the get_map function from this package to get base maps for different locations. To tell the function where you would like the map centered, you can either use the longitude and latitude of the center point of the map or you can use a character string to specify a location. This will work well for most cities, and you can also use it with landmarks, but it might fail to geocode less well-known locations. You can use the *zoom* parameter to set the amount the map is zoomed in on that location; this value should be between 3 and 20, with lower values more zoomed out and higher values more zoomed in.
 
-NOTE: To use the `get_map` function and other functions in the ggmap package, you need a working Google Maps API Key. In order to create an API key, you need to: 
+NOTE: To use the get_map function and other functions in the ggmap package, you need a working Google Maps API Key. In order to create an API key, you need to: 
 
 1) Create a Google account
 2) Goto the Google Maps Platform Console to create an API key
@@ -183,7 +203,7 @@ READ ME on this: https://cran.r-project.org/web/packages/ggmap/readme/README.htm
 ```{r}
 
 # register your google API Key here like this 
-register_google(key = "XXXX")
+register_google(key = "XXXXXX")
 
 # load the latest version of ggmap
 # you devtools for this
@@ -226,12 +246,12 @@ map_3 <- get_map("Austin", zoom = 12,
 
 library(gridExtra)
 # arrange in one grid 
-grid.arrange(map_1, map_2, map_3, nrow = 1) 
+gridExtra::grid.arrange(map_1, map_2, map_3, nrow = 1) 
 
 
 ```
 
-We can also create a map by entering in specific longitude and latitude coordinates. ggmap will center a map on this point. 
+We can also create a map by entering in specific longitude and latitude coordinates. `ggmap` will center a map on this point. 
 
 ```{r}
 
@@ -239,6 +259,7 @@ get_map(c(2.35, 48.86), zoom = 10) %>%
   ggmap(extent = "device")
 
 ```
+
 You can use the ggmap package to do a number of other interesting tasks related to geographic data. For example, the package allows you to use the Google Maps API, through the geocode function, to get the latitude and longitude of specific locations based on character strings of the location or its address. For example, you can get the location of the Supreme Court of the United States by calling:
 
 
@@ -251,14 +272,12 @@ geocode("1 First St NE, Washington, DC")
 
 
 *Students do this* 
-Look up the coordinates to your home or a place of interest to you.  How specific and granular can you make the map? 
+Look up the coordinates to your home or a place of interest to you.  Create a map using ggmap of your home. How specific and granular can you make the map? How broad? 
 
 ```{r}
 
 
 ```
-
-# Final Example
 
 # Layering with ggmap 
 Like other mapping tasks, we're using interested in more than the map. We want to know about how some data of interest are geographically distributed. Here, we use data in the ggamp package on crime in Houston. 
@@ -272,7 +291,7 @@ names(crime)
 # pull road map of Houston from Google API
 hmap <- get_map("houston", zoom = 13,
                  source = "google", maptype = "roadmap") %>%
-ggmap(extent = "device")
+  ggmap(extent = "device")
 hmap
 
 # qmap is another syntax within ggmap to make the same plot
@@ -289,5 +308,11 @@ violent_crimes <- subset(violent_crimes, -95.39681 <= lon & lon <= -95.34188 & 2
  
  
 # Map Points on Google Map 
+theme_set(theme_bw(16))
+HoustonMap <- qmap("houston", zoom = 14, color = "bw", legend = "topleft")
+HoustonMap <- HoustonMap +
+geom_point(aes(x = lon, y = lat, colour = offense, size = offense),
+data = violent_crimes)
+HoustonMap
 
 ```
