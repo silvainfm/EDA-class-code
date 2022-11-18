@@ -1,5 +1,5 @@
 ---
-title: "Mod 13- Kmeans"
+title: "Kmeans_instructor"
 author: "Dr. Cassy Dorff"
 date: "11/17/2022"
 output:
@@ -68,10 +68,11 @@ fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4
 
 - What does the function `get_dist()` do? What arguments does it take? What is its default measure?
   + hint: check out [this link for a refresher on measuring distance](https://www.displayr.com/what-is-a-distance-matrix/).
-  
+  + Answer: default is euclidean distance, it's key argument is that it takes a data.frame. The function creates a distance matrix. A distance matrix quite literally computes the distance between points using the variables available. 
 
 - Why is it useful to visualize the distance matrix? 
   + Note, there are different ways you can measure distance. We are using the classical euclidean measurement. [More here! Don't forget, as you get farther along using clustering, distance choice is more important](https://www.datanovia.com/en/lessons/clustering-distance-measures/#methods-for-measuring-distances)
+  + Answer: The graph above helps us begin to illustrate which states have large dissimilarities (red) versus those that appear to be fairly similar (teal).The ordered dissimilarity matrix image (ODI) displays the clustering *tendency* of the dataset. 
 
 # Running the k-means algorithm 
 
@@ -86,6 +87,7 @@ We will use `kmeans() `on our `df` object and specify k as equal to 2 to begin. 
 # compute k-means with k=2
 set.seed(1234)
 k2 <- kmeans(df, centers = 2, nstart = 25)
+
 
 # Print the results
 print(k2)
@@ -136,22 +138,43 @@ Below, on your own:
 
 *Practice*
 ```{r}
+view(k2$cluster)
 
+df %>%
+  as_tibble() %>%
+  mutate(cluster = k2$cluster, 
+         state=row.names(USArrests)) %>%
+  ggplot(aes(UrbanPop, Murder, color = factor(cluster), label = state)) + 
+  geom_text()
 
-
-
-
+# OR
+fviz_cluster(object = k2, data = df, geom = "point",
+choose.vars = c("UrbanPop", "Murder"), stand = FALSE, 
+ellipse.type = "norm") + theme_bw()
 ```
 
 2. Because the number of clusters (k) must be set before we start the algorithm, it is often advantageous to use several different values of k and examine the differences in the results. Execute the same process above but now for 3, 4, and 5 clusters, and the plot the results in one figure:
 
 ```{r}
+k3 = kmeans(df, centers=3, nstart=25)
+k4 = kmeans(df, centers=4, nstart=25)
+k5 = kmeans(df, centers=5, nstart=25)
 
+p2 = fviz_cluster(k2, geom = "point", data = df) + 
+  ggtitle("k = 2") + 
+  theme_minimal()
+p3 = fviz_cluster(k3, geom = "point", data = df) + 
+  ggtitle("k = 3") + 
+  theme_minimal()
+p4 = fviz_cluster(k4, geom = "point", data = df) + 
+  ggtitle("k = 4") + 
+  theme_minimal()
+p5 = fviz_cluster(k5, geom = "point", data = df) + 
+  ggtitle("k = 5") + 
+  theme_minimal()
 
-
-
-
-
+p2+p3+p4+p5
+#view(df)
 ```
 
 We could also look at the output for each of these to assess how well the clusters are mapping onto the data. 
@@ -177,8 +200,7 @@ If the line chart looks like an arm, then the “elbow” (the point of inflecti
 Together, let us examine and elbow plot for k-means analysis of this data:
 
 ```{r}
-fviz_nbclust()
-
+fviz_nbclust(df, kmeans, method = "wss")
 ```
 
 *Discuss*
@@ -192,13 +214,24 @@ Write the code above to re-run the algorithm with 4 clusters and plot the result
 final <- kmeans(df, centers = 4, nstart = 25)
 final
 
-# can you make this plot more legible? 
 finalplot <- fviz_cluster(final, data = df) + 
   ggtitle("k = 4") +
   theme_minimal()
 finalplot
 
-# what about with the built in package's function?
+fviz_cluster(object = final, data = df,
+  choose.vars = c("UrbanPop", "Murder"), 
+  palette = "Set2", geom= "text", repel=TRUE,
+  stand = FALSE) +
+  theme_bw()
 ```
 
-In future analysis, you can actually *begin* with the elbow plot. Then you can narrow it down to a few options (maybe 3,4,5) if you are not confident. Next you can visually inspect the clusters, but do not forget to also check to see how much variance is explained by the clusters as well as whether or not you can interpret them.
+In future analysis, you can actually *begin* with the elbow plot. Then you can narrow it down to a few options (maybe 3,4,5) if you are not confident. Next you can visually inspect the clusters, but do not forget to also check to see how much variance is explained by the clusters.
+
+
+## Sources
+
+- One version of this was originally written by Dr. Dorff but then we found a version online that was very similar, written by the UC school of Business Analytics, and we adapted the tutorial to it.
+- Covid data is available online, thanks to Yasi Wang and Dr. Shepard for this info
+
+
